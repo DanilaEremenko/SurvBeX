@@ -1,0 +1,14 @@
+{
+  "COX_COEFS_CLS": [
+    [0.50, 0.25, 0.12, 0.00, 0.00]
+  ],
+  "TRAIN_SIZE": 200,
+  "NEIGH_SIZE": 100,
+  "NEIGH_VAL_SIZE": 20,
+  "BERAN_K_NORM": "NO",
+  "MAX_ITER": 100,
+  "DATA_POINT_DEV": 0.0,
+  "KERNEL_WIDTH": 0.4,
+  "BBOX": "rf",
+  "DS": "veterans"
+}
