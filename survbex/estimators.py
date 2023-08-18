@@ -34,9 +34,18 @@ class BeranModel:
         else:
             raise Exception(f'Unexpected kernel = {kernel_name}')
 
+    def get_torch_kernel_dist_fn_by_name(self, kernel_name: str):
+        if kernel_name == 'gaussian':
+            return torch.square
+        elif kernel_name == 'triangle':
+            return torch.abs
+        else:
+            raise Exception(f'Unexpected kernel = {kernel_name}')
+
     def __init__(self, kernel_width: float, kernel_name: str, log_epsilon=0.001, verbose=False):
         self.kernel_width = kernel_width
         self.kernel_fn = self.get_kernel_fn_by_name(kernel_name=kernel_name)
+        self.kernel_dist_fn = self.get_torch_kernel_dist_fn_by_name(kernel_name=kernel_name)
         self.log_epsilon = log_epsilon
         self.logger = logging.getLogger('beran')
         self.logger.setLevel(level=logging.DEBUG if verbose else logging.ERROR)
@@ -240,10 +249,19 @@ class BeranModel:
         b_norm = self.b
         b_torch = torch.tensor(b_norm)
 
-        kernel_preds = torch.tensor(
-            [[self.kernel_fn(xi=xp, xj=xk, b=b_torch) for xk in self.X_sorted_torch] for xp in xps_torch]
-        )
-        # kernel_preds = torch.exp(-kernel_preds)
+        # slow legacy
+        # kernel_preds = torch.tensor(
+        #     [[self.kernel_fn(xi=xp, xj=xk, b=b_torch) for xk in self.X_sorted_torch] for xp in xps_torch]
+        # )
+
+        # speed up
+        xps_torch_rep = xps_torch.repeat_interleave(len(self.X_sorted_torch), 0)
+        x_train_rep = self.X_sorted_torch.repeat(len(xps_torch), 1)
+        b_torch_rep = b_torch[None].repeat(len(xps_torch_rep), 1)
+        kernel_preds = self.kernel_width * b_torch_rep * self.kernel_dist_fn(xps_torch_rep - x_train_rep)
+        kernel_preds = torch.exp(-torch.mean(kernel_preds, axis=-1)) \
+            .reshape(len(xps), len(self.X_sorted_torch))
+
         kernel_preds /= kernel_preds.sum(axis=1)[:, None]
         S = st_fn(kernel_preds[:, :, None])
         if len(self.ids_with_repeats) != len(self.y_ets_sorted):
