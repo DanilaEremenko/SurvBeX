@@ -156,7 +156,7 @@ class SurvBexExplainer(SurvLimeExplainer):
             verbose=verbose,
         )
         if optimizer == 'convex':
-            opt_funcion_maker = OptFuncionMaker(
+            self.opt_funcion_maker = OptFuncionMaker(
                 **args
             )
         elif optimizer == 'gradient':
@@ -165,7 +165,7 @@ class SurvBexExplainer(SurvLimeExplainer):
             assert grid_info_file is not None, 'grid_info_file arg should be passed for BeX explainer'
             assert max_iter is not None, 'max_iter arg should be passed for BeX explainer'
 
-            opt_funcion_maker = GradientOptimizer(
+            self.opt_funcion_maker = GradientOptimizer(
                 **args,
                 neighbours_val=neighbours_val,
                 neighbours_val_transformed=neighbours_val_transformed,
@@ -175,6 +175,6 @@ class SurvBexExplainer(SurvLimeExplainer):
         else:
             raise Exception(f'Undefined optimizer = {optimizer}')
 
-        b = opt_funcion_maker.solve_problem()
+        b = self.opt_funcion_maker.solve_problem()
         self.computed_weights = np.copy(b)
         return b
