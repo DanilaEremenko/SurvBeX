@@ -10,6 +10,7 @@ from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import ParameterGrid
 from sklearn.preprocessing import MinMaxScaler
 from sksurv.functions import StepFunction
+from sksurv.metrics import concordance_index_censored
 
 logging.basicConfig()
 
@@ -156,11 +157,24 @@ def scipy_optimization(
         train_loss_history.append(train_loss)
         val_loss_history.append(val_loss)
 
+        beran_train_f = pred_fn(xps=X)
+        cindex_train = concordance_index_censored(
+            event_indicator=y_events, event_time=y_event_times,
+            estimate=1 / beran_train_f.mean(axis=-1)
+        )[0]
+        cindex_target = concordance_index_censored(
+            event_indicator=np.ones(len(bbox_neigh_train_f), dtype=np.bool_),
+            event_time=bbox_neigh_train_f.mean(axis=-1),
+            estimate=1 / beran_neigh_train_f.mean(axis=-1)
+        )[0]
+
         b_history.append(b_new)
-        logger.debug(f'{len(train_loss_history)}:weights       = {b}')
-        logger.debug(f'{len(train_loss_history)}:weights sum   = {abs(b).sum()}')
-        logger.debug(f'{len(train_loss_history)}:train loss    = {train_loss:.4f}')
-        logger.debug(f'{len(train_loss_history)}:val loss      = {val_loss:.4f}')
+        logger.debug(f'{len(train_loss_history)}:weights              = {b}')
+        logger.debug(f'{len(train_loss_history)}:weights sum          = {abs(b).sum()}')
+        logger.debug(f'{len(train_loss_history)}:train loss           = {train_loss:.4f}')
+        logger.debug(f'{len(train_loss_history)}:target cindex        = {cindex_target:.4f}')
+        logger.debug(f'{len(train_loss_history)}:train cindex         = {cindex_train:.4f}')
+        logger.debug(f'{len(train_loss_history)}:val loss             = {val_loss:.4f}')
 
         return ret_val
 
