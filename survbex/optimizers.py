@@ -283,12 +283,15 @@ class GradientOptimizer(OptFuncionMaker):
             unique_times_to_event=self.unique_times_to_event,
             model_output_times=self.model_output_times,
         )
+        self.bbox_neigh_s = bbox_neigh_s
+
         bbox_neigh_val_s = predict_wrapper(
             predict_fn=self.predict_fn,
             data=self.neighbours_val_transformed,
             unique_times_to_event=self.unique_times_to_event,
             model_output_times=self.model_output_times,
         )
+        self.bbox_neigh_val_s = bbox_neigh_val_s
 
         data_point_S = predict_wrapper(
             predict_fn=self.predict_fn,
