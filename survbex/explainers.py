@@ -5,8 +5,8 @@ from sklearn.utils import check_random_state
 from sksurv.functions import StepFunction
 
 from survbex.optimizers import GradientOptimizer
+from survbex.survlimepy_optimization_upd import OptFuncionMaker
 from survlimepy import SurvLimeExplainer
-from survlimepy.utils.optimisation import OptFuncionMaker
 from survlimepy.utils.neighbours_generator import NeighboursGenerator
 
 
