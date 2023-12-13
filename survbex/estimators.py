@@ -4,17 +4,8 @@ import math
 import numpy as np
 import pandas as pd
 import torch
-from numba import njit
 
 logging.basicConfig()
-
-
-@njit
-def K_numba(b: np.ndarray, xi: np.ndarray, xj: np.ndarray, kernel_width: float) -> float:
-    norm_b = np.abs(b).sum()
-    # norm_b = np.linalg.norm(b)
-    b_normalized = np.abs(b) / norm_b if norm_b != 0 else b
-    return math.exp(-np.sum(b_normalized * (xi - xj) ** 2) / (2 * kernel_width ** 2))
 
 
 class BeranModel:
@@ -76,10 +67,10 @@ class BeranModel:
     # ------------------------------------------------ PYTHON IMPLEMENTATIONS -------------------------------------------
     ####################################################################################################################
     def K(self, xi: np.ndarray, xj: np.ndarray) -> float:
-        # norm_b = sum(abs(self.b))
-        # b_normalized = abs(self.b) / norm_b if norm_b != 0 else self.b
-        # return math.exp(-sum(b_normalized * (xi - xj) ** 2) / (2 * self.kernel_width ** 2))
-        return K_numba(b=self.b, xi=xi, xj=xj, kernel_width=self.kernel_width)
+        norm_b = np.abs(self.b).sum()
+        # norm_b = np.linalg.norm(b)
+        b_normalized = np.abs(self.b) / norm_b if norm_b != 0 else self.b
+        return math.exp(-np.sum(b_normalized * (xi - xj) ** 2) / (2 * self.kernel_width ** 2))
 
     def K_der1(self, xi: np.ndarray, xj: np.ndarray):
         norm_b = sum(abs(self.b))
